@@ -926,6 +926,7 @@ function ChatFloating() {
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(false);
   const chatRef = useRef(null);
+  const localApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 480);
@@ -959,11 +960,32 @@ function ChatFloating() {
       }));
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: context }),
-      });
+      let res;
+      if (localApiKey) {
+        res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localApiKey}`,
+          },
+          body: JSON.stringify({
+            model: 'openrouter/auto',
+            messages: [
+              {
+                role: 'system',
+                content: 'Kamu adalah asisten AI untuk portofolio Mikhel Febian, mahasiswa Sistem Informasi semester 2 di Universitas Mulawarman yang tertarik dengan bisnis, web, teknologi, dan AI. Jawab pertanyaan tentang teknologi, proyek, dan skill dengan ramah dan alami. Konteks: Mikhel Febian, pemilik portofolio ini. Teknologi: React, Tailwind, MySQL, Rust, Web3, Three.js, Go, Docker. Proyek: Blood Donor System (React/Tailwind/MySQL), Crypto Sentinel (Rust/Web3), Neural Net UI (Three.js/AI), API Vault (Go/Docker). Jawab dalam bahasa Indonesia yang santai dan mudah dipahami. JANGAN gunakan karakter markdown seperti *, _, `, #, atau format tebal/miring. Gunakan teks biasa saja agar mudah dibaca.',
+              },
+              ...context,
+            ],
+          }),
+        });
+      } else {
+        res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: context }),
+        });
+      }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
