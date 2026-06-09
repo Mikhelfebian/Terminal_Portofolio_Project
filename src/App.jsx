@@ -171,9 +171,14 @@ function App() {
           id: `err-${Date.now()}`,
           type: 'error',
           component: (
-            <p className="font-code-sm text-error">
-              ERR: PERINTAH '{cmd.toUpperCase()}' TIDAK DIKENALI. KETIK 'help' UNTUK PROTOKOL.
-            </p>
+            <div className="border border-border/50 bg-surface p-3 space-y-2 animate-fade-in">
+              <p className="font-body-md text-body-md text-text-main">
+                Hmm, perintah "<span className="text-primary">{cmd.toLowerCase()}</span>" tidak saya kenal.
+              </p>
+              <p className="font-code-sm text-code-sm text-text-muted">
+                Coba ketik <span className="text-primary">help</span> untuk melihat daftar perintah yang tersedia.
+              </p>
+            </div>
           ),
         });
         break;
@@ -269,6 +274,13 @@ function App() {
                     />
                     <span className="text-primary font-bold cursor-blink ml-1">_</span>
                   </div>
+                  <button
+                    onClick={() => executeCommand(input.trim().toLowerCase())}
+                    disabled={!input.trim()}
+                    className="text-primary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed active:opacity-80"
+                  >
+                    <span className="material-symbols-outlined text-lg">send</span>
+                  </button>
                 </div>
               </footer>
           </div>
@@ -577,20 +589,16 @@ function DataPage() {
   );
 }
 
+const logTemplates = [
+  { type: 'INFO', msg: 'User diarahkan ke /social/instagram.', color: 'text-primary' },
+  { type: 'INFO', msg: 'Handshake tema: dark_mode tervalidasi.', color: 'text-primary' },
+  { type: 'WARN', msg: 'Latensi tinggi terdeteksi pada CDN node-sgp.', color: 'text-tertiary-container' },
+  { type: 'INFO', msg: 'Cache dibersihkan untuk system/manifest.', color: 'text-primary' },
+  { type: 'INFO', msg: 'Koneksi baru dibuat: ID_4992.', color: 'text-primary' },
+  { type: 'ERR', msg: 'Gagal sinkronisasi dengan penyedia analytics eksternal.', color: 'text-error' },
+];
+
 function LogsPage() {
-  const [logEntries, setLogEntries] = useState([]);
-  const [logInput, setLogInput] = useState('');
-  const [filterText, setFilterText] = useState('');
-
-  const logTemplates = [
-    { type: 'INFO', msg: 'User diarahkan ke /social/instagram.', color: 'text-primary' },
-    { type: 'INFO', msg: 'Handshake tema: dark_mode tervalidasi.', color: 'text-primary' },
-    { type: 'WARN', msg: 'Latensi tinggi terdeteksi pada CDN node-sgp.', color: 'text-tertiary-container' },
-    { type: 'INFO', msg: 'Cache dibersihkan untuk system/manifest.', color: 'text-primary' },
-    { type: 'INFO', msg: 'Koneksi baru dibuat: ID_4992.', color: 'text-primary' },
-    { type: 'ERR', msg: 'Gagal sinkronisasi dengan penyedia analytics eksternal.', color: 'text-error' },
-  ];
-
   const initialLogs = [
     { ts: '2023-10-27 10:45:12', type: 'INFO', msg: 'Kernel diinisialisasi. Jembatan sistem terbentuk.', color: 'text-primary' },
     { ts: '2023-10-27 10:45:12', type: 'INFO', msg: 'Halaman dimuat sukses (244ms).', color: 'text-primary' },
@@ -600,8 +608,11 @@ function LogsPage() {
     { ts: '2023-10-27 12:00:00', type: 'INFO', msg: 'Ringkasan harian dibuat. Performa optimal.', color: 'text-primary' },
   ];
 
+  const [logEntries, setLogEntries] = useState(initialLogs);
+  const [logInput, setLogInput] = useState('');
+  const [filterText, setFilterText] = useState('');
+
   useEffect(() => {
-    setLogEntries(initialLogs);
     const interval = setInterval(() => {
       const now = new Date();
       const ts = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
@@ -789,7 +800,13 @@ function WelcomeBlock() {
 
       <p className="font-headline-md text-headline-md text-primary terminal-glow">Selamat datang di Core-Terminal v2.0.6</p>
       <p className="font-body-md text-body-md text-text-main">Status: Online | Target: Full-Stack Developer Journey</p>
-      <p className="font-code-sm text-code-sm text-text-muted">Ketik 'help' untuk melihat protokol yang tersedia.</p>
+      <div className="border border-border/50 bg-surface p-3 space-y-1">
+        <p className="font-body-md text-body-md text-text-main">Coba ketik salah satu perintah di bawah:</p>
+        <p className="font-code-sm text-code-sm text-primary">  about     — Lihat profil saya</p>
+        <p className="font-code-sm text-code-sm text-primary">  projects  — Lihat proyek saya</p>
+        <p className="font-code-sm text-code-sm text-primary">  socials   — Lihat media sosial saya</p>
+        <p className="font-code-sm text-code-sm text-text-muted">  atau ketik <span className="text-primary">help</span> untuk semua perintah</p>
+      </div>
     </div>
   );
 }
@@ -954,7 +971,7 @@ function ChatFloating() {
           messages: [
             {
               role: 'system',
-              content: 'Kamu adalah asisten AI untuk portofolio seorang full-stack developer. Jawab pertanyaan tentang teknologi, proyek, dan skill dengan ramah dan alami. Konteks: Full-stack developer spesialis sistem terdistribusi dan frontend React. Teknologi: React, Tailwind, MySQL, Rust, Web3, Three.js, Go, Docker. Proyek: Blood Donor System (React/Tailwind/MySQL), Crypto Sentinel (Rust/Web3), Neural Net UI (Three.js/AI), API Vault (Go/Docker). Jawab dalam bahasa Indonesia yang santai dan mudah dipahami.',
+              content: 'Kamu adalah asisten AI untuk portofolio Mikhel Febian, mahasiswa Sistem Informasi semester 2 di Universitas Mulawarman yang tertarik dengan bisnis, web, teknologi, dan AI. Jawab pertanyaan tentang teknologi, proyek, dan skill dengan ramah dan alami. Konteks: Mikhel Febian, pemilik portofolio ini. Teknologi: React, Tailwind, MySQL, Rust, Web3, Three.js, Go, Docker. Proyek: Blood Donor System (React/Tailwind/MySQL), Crypto Sentinel (Rust/Web3), Neural Net UI (Three.js/AI), API Vault (Go/Docker). Jawab dalam bahasa Indonesia yang santai dan mudah dipahami. JANGAN gunakan karakter markdown seperti *, _, `, #, atau format tebal/miring. Gunakan teks biasa saja agar mudah dibaca.',
             },
             ...context,
           ],
