@@ -926,7 +926,6 @@ function ChatFloating() {
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(false);
   const chatRef = useRef(null);
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 480);
@@ -943,7 +942,7 @@ function ChatFloating() {
 
   const sendMessage = async () => {
     const text = chatInput.trim();
-    if (!text || loading || !apiKey) return;
+    if (!text || loading) return;
 
     const userMsg = { role: 'user', text };
     setMessages((prev) => [...prev, userMsg]);
@@ -960,22 +959,10 @@ function ChatFloating() {
       }));
 
     try {
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'openrouter/auto',
-          messages: [
-            {
-              role: 'system',
-              content: 'Kamu adalah asisten AI untuk portofolio Mikhel Febian, mahasiswa Sistem Informasi semester 2 di Universitas Mulawarman yang tertarik dengan bisnis, web, teknologi, dan AI. Jawab pertanyaan tentang teknologi, proyek, dan skill dengan ramah dan alami. Konteks: Mikhel Febian, pemilik portofolio ini. Teknologi: React, Tailwind, MySQL, Rust, Web3, Three.js, Go, Docker. Proyek: Blood Donor System (React/Tailwind/MySQL), Crypto Sentinel (Rust/Web3), Neural Net UI (Three.js/AI), API Vault (Go/Docker). Jawab dalam bahasa Indonesia yang santai dan mudah dipahami. JANGAN gunakan karakter markdown seperti *, _, `, #, atau format tebal/miring. Gunakan teks biasa saja agar mudah dibaca.',
-            },
-            ...context,
-          ],
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: context }),
       });
 
       const data = await res.json();
@@ -1057,23 +1044,7 @@ function ChatFloating() {
           </button>
         </div>
 
-        {!apiKey ? (
-          <div className="flex-1 flex items-center justify-center p-4 text-center">
-            <div className="space-y-3">
-              <span className="material-symbols-outlined text-4xl text-text-muted block">smart_toy</span>
-              <p className="font-body-md text-body-md text-text-muted">API key belum dikonfigurasi.</p>
-              <p className="font-code-sm text-code-sm text-text-main">
-                Dapatkan gratis di{' '}
-                <span className="text-primary">aistudio.google.com/apikey</span>
-              </p>
-              <p className="font-code-sm text-code-sm text-text-muted">
-                Set <span className="text-primary">VITE_OPENROUTER_API_KEY</span> di .env
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div ref={chatRef} className="flex-1 overflow-y-auto no-scrollbar px-3 py-2 space-y-3">
+        <div ref={chatRef} className="flex-1 overflow-y-auto no-scrollbar px-3 py-2 space-y-3">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[90%] p-2.5 border ${
@@ -1123,11 +1094,9 @@ function ChatFloating() {
                 >
                   <span className="material-symbols-outlined text-lg">send</span>
                 </button>
-              </div>
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
     </>
   );
 }
