@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { uploadImage } from '../supabase';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
-
 const TAB_FIELDS = {
   home: ['name', 'bio', 'hero_description', 'hero_photo', 'github_username'],
   about: ['about_title', 'about_text', 'about_photo'],
@@ -46,7 +44,7 @@ export function AdminPage({ onClose }) {
   };
 
   const saveViaApi = async (payload) => {
-    const res = await fetch(`${API_BASE}/api/portfolio`, {
+    const res = await fetch('/api/portfolio', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(payload),
@@ -111,7 +109,7 @@ export function AdminPage({ onClose }) {
   const handleLogin = async () => {
     if (!pass) { addLog('ERR', 'Masukkan password'); return; }
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pass }),

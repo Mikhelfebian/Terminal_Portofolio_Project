@@ -14,7 +14,6 @@ export function ChatFloating() {
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(false);
   const chatRef = useRef(null);
-  const API_BASE = import.meta.env.VITE_API_URL || '';
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 480);
@@ -48,7 +47,7 @@ export function ChatFloating() {
       }));
 
     try {
-      const res = await fetch(`${API_BASE}/api/chat`, {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: context }),
