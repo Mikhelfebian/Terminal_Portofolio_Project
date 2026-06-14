@@ -1,17 +1,21 @@
-export async function POST(request) {
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
-    const { messages } = await request.json();
+    const { messages } = req.body || {};
 
     if (!Array.isArray(messages) || messages.length === 0) {
-      return Response.json({ error: 'messages array is required and must not be empty' }, { status: 422 });
+      return res.status(422).json({ error: 'messages array is required and must not be empty' });
     }
 
     if (messages.some((m) => !m.role || !m.content || typeof m.content !== 'string')) {
-      return Response.json({ error: 'Each message must have role and content (string)' }, { status: 422 });
+      return res.status(422).json({ error: 'Each message must have role and content (string)' });
     }
 
     if (messages.length > 20) {
-      return Response.json({ error: 'Maximum 20 messages allowed per request' }, { status: 422 });
+      return res.status(422).json({ error: 'Maximum 20 messages allowed per request' });
     }
 
     const systemMsg = {
@@ -29,6 +33,10 @@ Namun, jika pengguna bertanya tentang coding, pemrograman, IT, teknologi, atau t
 Kamu bukan asisten portofolio — kamu adalah AI serba bisa yang unggul dalam diskusi teknis.`,
     };
 
+    if (!process.env.OPENROUTER_API_KEY) {
+      return res.status(500).json({ error: 'OPENROUTER_API_KEY not configured in Vercel env' });
+    }
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -45,16 +53,16 @@ Kamu bukan asisten portofolio — kamu adalah AI serba bisa yang unggul dalam di
 
     if (!response.ok) {
       const errMsg = data?.error?.message || `OpenRouter: ${response.status}`;
-      return Response.json({ error: errMsg }, { status: response.status });
+      return res.status(response.status).json({ error: errMsg });
     }
 
     const reply = data?.choices?.[0]?.message?.content;
     if (!reply) {
-      return Response.json({ error: 'AI returned empty response' }, { status: 502 });
+      return res.status(502).json({ error: 'AI returned empty response' });
     }
 
-    return Response.json({ reply });
+    res.json({ reply });
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    res.status(500).json({ error: err.message });
   }
 }

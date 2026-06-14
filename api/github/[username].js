@@ -1,9 +1,9 @@
-export async function GET(request, { params }) {
+export default async function handler(req, res) {
   try {
-    const { username } = params;
+    const { username } = req.query;
 
-    if (!/^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(username)) {
-      return Response.json({ error: 'Invalid GitHub username format' }, { status: 422 });
+    if (!username || !/^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(username)) {
+      return res.status(422).json({ error: 'Invalid GitHub username format' });
     }
 
     const headers = {
@@ -21,9 +21,9 @@ export async function GET(request, { params }) {
 
     if (!profileRes.ok) {
       const status = profileRes.status;
-      if (status === 404) return Response.json({ error: 'GitHub user not found' }, { status: 404 });
-      if (status === 403) return Response.json({ error: 'GitHub rate limit exceeded' }, { status: 429 });
-      return Response.json({ error: 'GitHub API error' }, { status });
+      if (status === 404) return res.status(404).json({ error: 'GitHub user not found' });
+      if (status === 403) return res.status(429).json({ error: 'GitHub rate limit exceeded. Set GITHUB_TOKEN in Vercel env.' });
+      return res.status(status).json({ error: 'GitHub API error' });
     }
 
     const [profile, repos] = await Promise.all([profileRes.json(), reposRes.json()]);
@@ -72,8 +72,8 @@ export async function GET(request, { params }) {
       },
     };
 
-    return Response.json(result);
+    res.json(result);
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    res.status(500).json({ error: err.message });
   }
 }

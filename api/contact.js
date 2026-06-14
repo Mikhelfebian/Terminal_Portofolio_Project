@@ -1,13 +1,17 @@
-export async function POST(request) {
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
-    const { name, email, message } = await request.json();
+    const { name, email, message } = req.body || {};
 
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
-      return Response.json({ error: 'Semua bidang wajib diisi.' }, { status: 422 });
+      return res.status(422).json({ error: 'Semua bidang wajib diisi.' });
     }
 
     if (name.length > 100 || email.length > 200 || message.length > 2000) {
-      return Response.json({ error: 'Input terlalu panjang.' }, { status: 422 });
+      return res.status(422).json({ error: 'Input terlalu panjang.' });
     }
 
     const sanitize = (str) => str.replace(/<[^>]*>/g, '');
@@ -18,23 +22,24 @@ export async function POST(request) {
       message: sanitize(message.trim()),
     };
 
-    if (process.env.VITE_FORMSPREE_ID) {
-      const res = await fetch(`https://formspree.io/f/${process.env.VITE_FORMSPREE_ID}`, {
+    const formspreeId = process.env.VITE_FORMSPREE_ID;
+    if (formspreeId) {
+      const response = await fetch(`https://formspree.io/f/${formspreeId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        return Response.json({ error: 'Gagal mengirim pesan ke penyedia email.' }, { status: 502 });
+      if (!response.ok) {
+        return res.status(502).json({ error: 'Gagal mengirim pesan ke penyedia email.' });
       }
 
-      return Response.json({ success: true, message: 'Pesan terkirim!' });
+      return res.json({ success: true, message: 'Pesan terkirim!' });
     }
 
     console.log('[Contact]', JSON.stringify(payload));
-    return Response.json({ success: true, message: 'Pesan terkirim (dev mode)!' });
+    res.json({ success: true, message: 'Pesan terkirim (dev mode)!' });
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    res.status(500).json({ error: err.message });
   }
 }

@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from 'crypto';
+import { createHmac, timingSafeEqual, randomBytes } from 'crypto';
 
 function base64url(buf) {
   return Buffer.from(buf).toString('base64url');
@@ -22,25 +22,29 @@ function createJWT(payload, secret) {
   return `${header64}.${payload64}.${signature}`;
 }
 
-export async function POST(request) {
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
-    const { password } = await request.json();
+    const { password } = req.body || {};
 
     const adminPassword = process.env.ADMIN_PASSWORD;
     const jwtSecret = process.env.JWT_SECRET;
 
     if (!adminPassword || !jwtSecret) {
-      return Response.json({ error: 'Server not configured' }, { status: 500 });
+      return res.status(500).json({ error: 'Server not configured. Set ADMIN_PASSWORD and JWT_SECRET in Vercel env.' });
     }
 
     if (password !== adminPassword) {
-      return Response.json({ error: 'Invalid password' }, { status: 401 });
+      return res.status(401).json({ error: 'Password salah.' });
     }
 
     const token = createJWT({ role: 'admin', jti: randomBytes(16).toString('hex') }, jwtSecret);
 
-    return Response.json({ token, expiresIn: 7200 });
+    res.json({ token, expiresIn: 7200 });
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    res.status(500).json({ error: err.message });
   }
 }
