@@ -1,0 +1,29 @@
+# ─── Systemd service unit for terminal-bio API ───
+# Deploy to: /etc/systemd/system/terminal-bio-api.service
+# Enable:    systemctl enable terminal-bio-api
+# Start:     systemctl start terminal-bio-api
+
+[Unit]
+Description=terminal-bio Express API server
+After=network.target
+
+[Service]
+Type=simple
+User=deployer
+Group=deployer
+WorkingDirectory=/var/www/terminal-bio/server
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/www/terminal-bio/server/storage
+ReadOnlyPaths=/var/www/terminal-bio/server
+
+[Install]
+WantedBy=multi-user.target

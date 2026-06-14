@@ -1,25 +1,47 @@
-# Logs
-logs
+# ─── Environment (keep .env.example trackable) ───
+.env
+.env.local
+.env.production
+.env.staging
+
+# ─── Dependencies ───
+node_modules/
+server/node_modules/
+
+# ─── Build output ───
+dist/
+dist-ssr/
+
+# ─── Logs ───
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-.env
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# ─── OS files ───
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ─── IDE / Editor ───
+.vscode/
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+
+# ─── Server runtime ───
+server/storage/logs/*
+server/storage/cache/*
+!server/storage/logs/.gitkeep
+!server/storage/cache/.gitkeep
+
+# ─── Misc ───
+*.local
+*.pid
+*.seed
+*.pid.lock
